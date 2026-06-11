@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Delicious plant-based recipes — quick 30-minute meals and easy crock pot dinners.">
+  <title>The Green Table — Vegan Recipes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <nav class="nav">
+      <a class="brand" href="#top">🌿 The Green Table</a>
+      <div class="nav-links">
+        <a href="#thirty-minute">30-Minute Meals</a>
+        <a href="#crock-pot">Crock Pot Meals</a>
+        <a href="#all-recipes">All Recipes</a>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-content">
+      <h1>100% Plant-Based.<br>100% Delicious.</h1>
+      <p>Easy vegan recipes for real life — dinners ready in 30 minutes or slow-cooked while you're out living yours.</p>
+      <div class="hero-buttons">
+        <a class="btn btn-primary" href="#thirty-minute">⏱️ 30-Minute Meals</a>
+        <a class="btn btn-secondary" href="#crock-pot">🍲 Crock Pot Meals</a>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="recipe-section" id="thirty-minute">
+      <div class="section-head">
+        <h2>⏱️ 30-Minute Meals</h2>
+        <p>Weeknight winners — on the table fast, no shortcuts on flavor.</p>
+      </div>
+      <div class="recipe-grid" data-category="quick"></div>
+    </section>
+
+    <section class="recipe-section alt" id="crock-pot">
+      <div class="section-head">
+        <h2>🍲 Crock Pot Vegan Meals</h2>
+        <p>Set it, forget it, and come home to dinner. Slow cooker comfort food, all plants.</p>
+      </div>
+      <div class="recipe-grid" data-category="crockpot"></div>
+    </section>
+
+    <section class="recipe-section" id="all-recipes">
+      <div class="section-head">
+        <h2>🥗 More Favorites</h2>
+        <p>Reader favorites from breakfast to dessert.</p>
+      </div>
+      <div class="recipe-grid" data-category="favorites"></div>
+    </section>
+  </main>
+
+  <!-- Recipe detail modal -->
+  <div class="modal-overlay" id="recipe-modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" id="modal-close" aria-label="Close recipe">&times;</button>
+      <img class="modal-img" id="modal-img" src="" alt="">
+      <div class="modal-body">
+        <h3 id="modal-title"></h3>
+        <div class="modal-meta" id="modal-meta"></div>
+        <p class="modal-desc" id="modal-desc"></p>
+        <div class="modal-columns">
+          <div>
+            <h4>Ingredients</h4>
+            <ul id="modal-ingredients"></ul>
+          </div>
+          <div>
+            <h4>Directions</h4>
+            <ol id="modal-steps"></ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>🌿 The Green Table — plant-based recipes made simple.</p>
+  </footer>
+
+  <script src="recipes.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
