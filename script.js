@@ -1,14 +1,20 @@
-// Renders recipe cards into each section and wires up the detail modal.
+// Renders recipe cards into each section, powers search, "show all", and the detail modal.
 (function () {
+  const PREVIEW_COUNT = 12;
   const grids = document.querySelectorAll(".recipe-grid");
   const overlay = document.getElementById("recipe-modal");
   const closeBtn = document.getElementById("modal-close");
+  const searchInput = document.getElementById("recipe-search");
+  const searchCount = document.getElementById("search-count");
 
   function buildCard(recipe) {
     const card = document.createElement("button");
     card.className = "recipe-card";
     card.type = "button";
     card.setAttribute("aria-label", `View recipe: ${recipe.title}`);
+    card.dataset.search = (
+      recipe.title + " " + recipe.desc + " " + recipe.ingredients.join(" ")
+    ).toLowerCase();
 
     const imgWrap = document.createElement("div");
     imgWrap.className = "card-img-wrap";
@@ -49,12 +55,51 @@
     return card;
   }
 
+  // Render each section: first PREVIEW_COUNT visible, rest behind a "Show all" button.
   grids.forEach((grid) => {
     const category = grid.dataset.category;
-    RECIPES.filter((r) => r.category === category).forEach((recipe) => {
-      grid.appendChild(buildCard(recipe));
+    const recipes = RECIPES.filter((r) => r.category === category);
+
+    recipes.forEach((recipe, i) => {
+      const card = buildCard(recipe);
+      if (i >= PREVIEW_COUNT) card.classList.add("extra", "collapsed");
+      grid.appendChild(card);
     });
+
+    if (recipes.length > PREVIEW_COUNT) {
+      const moreBtn = document.createElement("button");
+      moreBtn.className = "btn btn-secondary show-more";
+      moreBtn.type = "button";
+      moreBtn.textContent = `Show all ${recipes.length} recipes ↓`;
+      moreBtn.addEventListener("click", () => {
+        grid.querySelectorAll(".extra").forEach((c) => c.classList.remove("collapsed"));
+        moreBtn.remove();
+      });
+      grid.insertAdjacentElement("afterend", moreBtn);
+    }
   });
+
+  // Live search across all sections.
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      const query = searchInput.value.trim().toLowerCase();
+      const searching = query.length > 0;
+      document.body.classList.toggle("searching", searching);
+
+      let matches = 0;
+      document.querySelectorAll(".recipe-card").forEach((card) => {
+        const hit = !searching || card.dataset.search.includes(query);
+        card.classList.toggle("search-miss", !hit);
+        if (searching && hit) matches++;
+      });
+
+      if (searchCount) {
+        searchCount.textContent = searching
+          ? `${matches} recipe${matches === 1 ? "" : "s"} found`
+          : "";
+      }
+    });
+  }
 
   function openModal(recipe) {
     const img = document.getElementById("modal-img");

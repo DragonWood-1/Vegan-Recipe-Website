@@ -110,6 +110,53 @@ h1, h2, h3 { font-family: "Fraunces", Georgia, serif; }
 .btn-primary { background: #fff; color: var(--green-dark); }
 .btn-secondary { background: var(--green); color: #fff; }
 
+/* ---------- Search ---------- */
+.search-wrap {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#recipe-search {
+  width: min(480px, 90%);
+  padding: 0.85rem 1.4rem;
+  border: none;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 1rem;
+  box-shadow: var(--shadow);
+}
+
+#recipe-search:focus { outline: 3px solid var(--green); }
+
+#search-count {
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-height: 1.4em;
+  color: #fff;
+  opacity: 0.95;
+}
+
+/* While searching: hide non-matches, reveal collapsed extras, hide show-more buttons */
+.recipe-card.search-miss { display: none; }
+body.searching .recipe-card.collapsed { display: flex; }
+body.searching .recipe-card.search-miss { display: none; }
+body.searching .show-more { display: none; }
+
+/* ---------- Show more ---------- */
+.recipe-card.collapsed { display: none; }
+
+.show-more {
+  display: block;
+  margin: 0 auto 2.5rem;
+  cursor: pointer;
+  border: none;
+  font: inherit;
+  font-weight: 600;
+}
+
 /* ---------- Sections ---------- */
 .recipe-section {
   max-width: 1100px;

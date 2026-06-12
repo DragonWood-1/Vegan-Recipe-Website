@@ -18,7 +18,7 @@
       <div class="nav-links">
         <a href="#thirty-minute">30-Minute Meals</a>
         <a href="#crock-pot">Crock Pot Meals</a>
-        <a href="#all-recipes">All Recipes</a>
+        <a href="#all-recipes">Favorites &amp; Desserts</a>
       </div>
     </nav>
   </header>
@@ -30,6 +30,11 @@
       <div class="hero-buttons">
         <a class="btn btn-primary" href="#thirty-minute">⏱️ 30-Minute Meals</a>
         <a class="btn btn-secondary" href="#crock-pot">🍲 Crock Pot Meals</a>
+        <a class="btn btn-secondary" href="#all-recipes">🍰 Favorites &amp; Desserts</a>
+      </div>
+      <div class="search-wrap">
+        <input type="search" id="recipe-search" placeholder="Search 150 recipes — try “curry”, “chocolate”, “tacos”…" aria-label="Search recipes">
+        <span id="search-count" aria-live="polite"></span>
       </div>
     </div>
   </section>
@@ -53,8 +58,8 @@
 
     <section class="recipe-section" id="all-recipes">
       <div class="section-head">
-        <h2>🥗 More Favorites</h2>
-        <p>Reader favorites from breakfast to dessert.</p>
+        <h2>🥗 Favorites &amp; Vegan Desserts</h2>
+        <p>Reader favorites from breakfast to dessert — including 100% plant-based sweets.</p>
       </div>
       <div class="recipe-grid" data-category="favorites"></div>
     </section>
@@ -87,6 +92,9 @@
     <p>🌿 The Green Table — plant-based recipes made simple.</p>
   </footer>
 
+  <script src="recipes-quick.js"></script>
+  <script src="recipes-crockpot.js"></script>
+  <script src="recipes-favorites.js"></script>
   <script src="recipes.js"></script>
   <script src="script.js"></script>
 </body>
