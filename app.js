@@ -1,17 +1,24 @@
-// Renders recipe cards into each section, powers search, "show all", and the detail modal.
+// Shared app for The Green Table — runs on the homepage and every collection page.
+// Responsibilities: derive meal/ingredient/diet tags, render recipe cards,
+// power the detail modal, live search, "show all", and the mobile nav.
 (function () {
+  "use strict";
+
+  // Attach meal/ingredient/diet tags (from tags.js) to every recipe once.
+  RECIPES.forEach((r) => { r.tags = deriveTags(r); });
+
+  /* ---------------------------------------------------------------
+   * 2. Card + grid rendering
+   * ------------------------------------------------------------- */
   const PREVIEW_COUNT = 12;
-  const grids = document.querySelectorAll(".recipe-grid");
   const overlay = document.getElementById("recipe-modal");
   const closeBtn = document.getElementById("modal-close");
-  const searchInput = document.getElementById("recipe-search");
-  const searchCount = document.getElementById("search-count");
 
   function buildCard(recipe) {
     const card = document.createElement("button");
     card.className = "recipe-card";
     card.type = "button";
-    card.setAttribute("aria-label", `View recipe: ${recipe.title}`);
+    card.setAttribute("aria-label", "View recipe: " + recipe.title);
     card.dataset.search = (
       recipe.title + " " + recipe.desc + " " + recipe.ingredients.join(" ")
     ).toLowerCase();
@@ -55,52 +62,78 @@
     return card;
   }
 
-  // Render each section: first PREVIEW_COUNT visible, rest behind a "Show all" button.
-  grids.forEach((grid) => {
-    const category = grid.dataset.category;
-    const recipes = RECIPES.filter((r) => r.category === category);
-
+  // Render recipes into a grid; collapse beyond PREVIEW_COUNT behind a button.
+  function renderGrid(grid, recipes) {
+    if (!recipes.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty-msg";
+      empty.textContent = "No recipes here yet — check back soon!";
+      grid.replaceWith(empty);
+      return;
+    }
     recipes.forEach((recipe, i) => {
       const card = buildCard(recipe);
       if (i >= PREVIEW_COUNT) card.classList.add("extra", "collapsed");
       grid.appendChild(card);
     });
-
     if (recipes.length > PREVIEW_COUNT) {
       const moreBtn = document.createElement("button");
       moreBtn.className = "btn btn-secondary show-more";
       moreBtn.type = "button";
-      moreBtn.textContent = `Show all ${recipes.length} recipes ↓`;
+      moreBtn.textContent = "Show all " + recipes.length + " recipes ↓";
       moreBtn.addEventListener("click", () => {
         grid.querySelectorAll(".extra").forEach((c) => c.classList.remove("collapsed"));
         moreBtn.remove();
       });
       grid.insertAdjacentElement("afterend", moreBtn);
     }
-  });
+  }
 
-  // Live search across all sections.
+  // Homepage mode: one grid per category. Collection mode: a single filtered grid.
+  if (window.COLLECTION) {
+    const grid = document.querySelector(".recipe-grid");
+    const { kind, value } = window.COLLECTION; // kind: meals|ingredients|diets
+    const matches = RECIPES.filter((r) => r.tags[kind].includes(value));
+    if (grid) renderGrid(grid, matches);
+    const countEl = document.getElementById("collection-count");
+    if (countEl) countEl.textContent = matches.length + " recipes";
+  } else {
+    document.querySelectorAll(".recipe-grid[data-category]").forEach((grid) => {
+      renderGrid(grid, RECIPES.filter((r) => r.category === grid.dataset.category));
+    });
+  }
+
+  /* ---------------------------------------------------------------
+   * 3. Live search (scoped to whatever cards are on the page)
+   * ------------------------------------------------------------- */
+  const searchInput = document.getElementById("recipe-search");
+  const searchCount = document.getElementById("search-count");
   if (searchInput) {
+    const total = document.querySelectorAll(".recipe-card").length;
+    if (/\bNNN\b/.test(searchInput.placeholder)) {
+      searchInput.placeholder = searchInput.placeholder.replace("NNN", total);
+    }
     searchInput.addEventListener("input", () => {
       const query = searchInput.value.trim().toLowerCase();
       const searching = query.length > 0;
       document.body.classList.toggle("searching", searching);
-
       let matches = 0;
       document.querySelectorAll(".recipe-card").forEach((card) => {
         const hit = !searching || card.dataset.search.includes(query);
         card.classList.toggle("search-miss", !hit);
         if (searching && hit) matches++;
       });
-
       if (searchCount) {
         searchCount.textContent = searching
-          ? `${matches} recipe${matches === 1 ? "" : "s"} found`
+          ? matches + " recipe" + (matches === 1 ? "" : "s") + " found"
           : "";
       }
     });
   }
 
+  /* ---------------------------------------------------------------
+   * 4. Detail modal
+   * ------------------------------------------------------------- */
   function openModal(recipe) {
     const img = document.getElementById("modal-img");
     img.src = recipe.img;
@@ -110,7 +143,7 @@
 
     document.getElementById("modal-title").textContent = recipe.title;
     document.getElementById("modal-meta").textContent =
-      `⏱ ${recipe.time}  ·  🍽 ${recipe.servings}`;
+      "⏱ " + recipe.time + "  ·  🍽 " + recipe.servings;
     document.getElementById("modal-desc").textContent = recipe.desc;
 
     const ingredients = document.getElementById("modal-ingredients");
@@ -139,11 +172,18 @@
     document.body.style.overflow = "";
   }
 
-  closeBtn.addEventListener("click", closeModal);
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) closeModal();
-  });
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (overlay) overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !overlay.hidden) closeModal();
+    if (e.key === "Escape" && overlay && !overlay.hidden) closeModal();
   });
+
+  /* ---------------------------------------------------------------
+   * 5. Mobile nav toggle
+   * ------------------------------------------------------------- */
+  const navToggle = document.querySelector(".nav-toggle");
+  const navLinks = document.querySelector(".nav-links");
+  if (navToggle && navLinks) {
+    navToggle.addEventListener("click", () => navLinks.classList.toggle("open"));
+  }
 })();

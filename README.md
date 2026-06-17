@@ -1,36 +1,70 @@
 # 🌿 The Green Table — Vegan Recipe Website
 
-A simple, fast, plant-based recipe website built with plain HTML, CSS, and JavaScript — no build step required.
+A fast, plant-based recipe website built with plain HTML, CSS, and JavaScript.
+**170 recipes** across a homepage plus 16 browsable category / ingredient / diet pages.
 
-## Sections — 150 recipes
+## Pages
 
-- **⏱️ 30-Minute Meals (50)** — stir-fries, pastas, noodle bowls, tacos, quick curries, grain bowls, sandwiches, flatbread pizzas
-- **🍲 Crock Pot Vegan Meals (50)** — chilis, stews, soups, dals, tagines, ragus, pulled BBQ, slow cooker breakfasts
-- **🥗 Favorites & Vegan Desserts (50)** — breakfasts, appetizers, and sides plus cookies, cakes, cheesecake, pies, and more
+**Homepage** (`index.html`) — hero, sitewide search, "browse by" links, and the three
+original sections: 30-Minute Meals, Crock Pot Meals, and Favorites & Vegan Desserts.
 
-Each recipe card shows a photo, cook time, and serving size, and opens a full recipe (ingredients + step-by-step directions) in a modal. The hero search box filters all 150 recipes live by name, description, or ingredient; each section previews 12 cards with a "Show all" button.
+**Categories** — `breakfast` · `lunch` · `dinner` · `dessert` · `snack` · `soup` · `smoothie`
+**Ingredients** — `tofu` · `chickpea` · `lentil` · `mushroom` · `avocado`
+**Diets** — `high-protein` · `gluten-free` · `low-carb` · `oil-free`
+
+Each recipe card shows a photo, cook time, and servings, and opens a full recipe
+(ingredients + directions) in a modal. Every page has live search and a "Show all"
+button once a section grows past 12 cards.
+
+## How the category / ingredient / diet pages work
+
+Recipes are **not** manually tagged. `tags.js` derives meal, ingredient, and diet
+tags from each recipe's title and ingredient list at page load, and `app.js`
+filters the shared `RECIPES` array against the tag declared by each page
+(`window.COLLECTION`). This means a recipe automatically shows up on every page it
+qualifies for.
+
+Diet tagging is conservative (e.g. soy sauce counts as gluten unless tamari is
+specified). Diet pages display a note reminding readers to verify ingredients for
+their own needs. The auto-derived **low-carb** set was nearly empty for this
+grain/legume-heavy library, so a small curated low-carb collection
+(`recipes-lowcarb.js`, category `"lowcarb"`) is force-tagged as low-carb.
 
 ## Running locally
 
-Just open `index.html` in a browser, or serve the folder:
+```sh
+python3 -m http.server 8000   # then visit http://localhost:8000
+```
+
+## Regenerating the pages
+
+The homepage and all 16 collection pages are generated from one template so the
+nav, AdSense snippet, and modal stay identical everywhere. After changing the nav
+or shared layout, regenerate:
 
 ```sh
-python3 -m http.server 8000
-# then visit http://localhost:8000
+node build-pages.js
 ```
 
 ## Structure
 
 | File | Purpose |
 |---|---|
-| `index.html` | Page layout, sections, search box, and recipe modal |
-| `styles.css` | All styling (responsive grid, cards, search, modal) |
-| `recipes-quick.js` | 50 thirty-minute meal recipes (`RECIPES_QUICK`) |
-| `recipes-crockpot.js` | 50 crock pot recipes (`RECIPES_CROCKPOT`) |
-| `recipes-favorites.js` | 50 favorites & dessert recipes (`RECIPES_FAVORITES`) |
-| `recipes.js` | Combines the three collections into `RECIPES` |
-| `script.js` | Renders cards, search, show-more, and the modal |
+| `build-pages.js` | Generates `index.html` + the 16 collection pages |
+| `styles.css` | All styling (nav dropdowns, grid, cards, hero, modal) |
+| `tags.js` | Derives meal/ingredient/diet tags (shared by browser + tests) |
+| `app.js` | Renders cards, search, show-more, modal, and mobile nav |
+| `recipes.js` | Combines all collections into `RECIPES` |
+| `recipes-quick.js` | 50 thirty-minute meals (`RECIPES_QUICK`) |
+| `recipes-crockpot.js` | 50 crock pot meals (`RECIPES_CROCKPOT`) |
+| `recipes-favorites.js` | 50 favorites & desserts (`RECIPES_FAVORITES`) |
+| `recipes-smoothies.js` | Smoothies (`RECIPES_SMOOTHIES`) |
+| `recipes-lowcarb.js` | Curated low-carb dishes (`RECIPES_LOWCARB`) |
+| `ads.txt` | Google AdSense authorization |
 
 ## Adding a recipe
 
-Add an object to the matching collection file (`recipes-quick.js`, `recipes-crockpot.js`, or `recipes-favorites.js`) with a `category` of `"quick"`, `"crockpot"`, or `"favorites"`. It will appear in the matching section automatically. Photos load from Unsplash; if an image URL ever breaks, the card automatically falls back to a styled emoji placeholder.
+Add an object to the matching collection file (`category`: `"quick"`, `"crockpot"`,
+`"favorites"`, `"smoothie"`, or `"lowcarb"`). It will appear on the homepage and on
+every category/ingredient/diet page it qualifies for automatically. Photos load
+from Unsplash; a broken image URL falls back to a styled emoji placeholder.

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Delicious plant-based recipes — quick 30-minute meals, easy crock pot dinners, desserts, and more.">
-  <title>The Green Table — Vegan Recipes</title>
+  <meta name="description" content="Cookies, cakes, pies, and frozen treats — all dairy- and egg-free.">
+  <title>Vegan Dessert Recipes — The Green Table</title>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8788099801042098"
      crossorigin="anonymous"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,75 +55,21 @@
     </nav>
   </header>
 
-  <section class="hero" id="top">
+  <section class="collection-hero" style="--hero: url('https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?auto=format&fit=crop&w=1600&q=70')">
     <div class="hero-content">
-      <h1>100% Plant-Based.<br>100% Delicious.</h1>
-      <p>Over 160 easy vegan recipes — quick weeknight dinners, slow-cooker comfort food, desserts, smoothies, and more.</p>
-      <div class="hero-buttons">
-        <a class="btn btn-primary" href="#thirty-minute">⏱️ 30-Minute Meals</a>
-        <a class="btn btn-secondary" href="#crock-pot">🍲 Crock Pot Meals</a>
-        <a class="btn btn-secondary" href="dessert.html">🍰 Desserts</a>
-      </div>
+      <h1>🍰 Vegan Dessert Recipes</h1>
+      <p>Cookies, cakes, pies, and frozen treats — all dairy- and egg-free.</p>
+      <span class="collection-count" id="collection-count"></span>
       <div class="search-wrap">
-        <input type="search" id="recipe-search" placeholder="Search NNN recipes — try “curry”, “chocolate”, “tacos”…" aria-label="Search recipes">
+        <input type="search" id="recipe-search" placeholder="Search these recipes…" aria-label="Search recipes">
         <span id="search-count" aria-live="polite"></span>
       </div>
     </div>
   </section>
 
-  <section class="browse">
-    <div class="browse-inner">
-      <h2>Browse by Category</h2>
-      <div class="chips">
-        <a class="chip" href="breakfast.html">Breakfast</a>
-        <a class="chip" href="lunch.html">Lunch</a>
-        <a class="chip" href="dinner.html">Dinner</a>
-        <a class="chip" href="dessert.html">Dessert</a>
-        <a class="chip" href="snack.html">Snack</a>
-        <a class="chip" href="soup.html">Soup</a>
-        <a class="chip" href="smoothie.html">Smoothie</a>
-      </div>
-      <h2>Browse by Ingredient</h2>
-      <div class="chips">
-        <a class="chip" href="tofu.html">Tofu</a>
-        <a class="chip" href="chickpea.html">Chickpea</a>
-        <a class="chip" href="lentil.html">Lentil</a>
-        <a class="chip" href="mushroom.html">Mushroom</a>
-        <a class="chip" href="avocado.html">Avocado</a>
-      </div>
-      <h2>Browse by Diet</h2>
-      <div class="chips">
-        <a class="chip" href="high-protein.html">High Protein</a>
-        <a class="chip" href="gluten-free.html">Gluten Free</a>
-        <a class="chip" href="low-carb.html">Low Carb</a>
-        <a class="chip" href="oil-free.html">Oil Free</a>
-      </div>
-    </div>
-  </section>
-
   <main>
-    <section class="recipe-section" id="thirty-minute">
-      <div class="section-head">
-        <h2>⏱️ 30-Minute Meals</h2>
-        <p>Weeknight winners — on the table fast, no shortcuts on flavor.</p>
-      </div>
-      <div class="recipe-grid" data-category="quick"></div>
-    </section>
-
-    <section class="recipe-section alt" id="crock-pot">
-      <div class="section-head">
-        <h2>🍲 Crock Pot Vegan Meals</h2>
-        <p>Set it, forget it, and come home to dinner. Slow cooker comfort food, all plants.</p>
-      </div>
-      <div class="recipe-grid" data-category="crockpot"></div>
-    </section>
-
-    <section class="recipe-section" id="all-recipes">
-      <div class="section-head">
-        <h2>🥗 Favorites &amp; Vegan Desserts</h2>
-        <p>Reader favorites from breakfast to dessert — including 100% plant-based sweets.</p>
-      </div>
-      <div class="recipe-grid" data-category="favorites"></div>
+    <section class="recipe-section">
+      <div class="recipe-grid"></div>
     </section>
   </main>
 
@@ -153,6 +99,7 @@
   <script src="recipes-smoothies.js"></script>
   <script src="recipes-lowcarb.js"></script>
   <script src="recipes.js"></script>
+  <script>window.COLLECTION = { kind: "meals", value: "dessert" };</script>
   <script src="tags.js"></script>
   <script src="app.js"></script>
 </body>

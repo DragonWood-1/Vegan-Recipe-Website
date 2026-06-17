@@ -81,17 +81,37 @@ h1, h2, h3 { font-family: "Fraunces", Georgia, serif; }
   padding: 7rem 1.25rem;
 }
 
-.hero h1 {
+.hero h1, .collection-hero h1 {
   font-size: clamp(2.2rem, 5vw, 3.6rem);
   line-height: 1.15;
   margin-bottom: 1rem;
 }
 
-.hero p {
-  max-width: 540px;
-  margin: 0 auto 2rem;
+.hero p, .collection-hero p {
+  max-width: 580px;
+  margin: 0 auto 1rem;
   font-size: 1.1rem;
   opacity: 0.95;
+}
+
+/* ---------- Collection page hero ---------- */
+.collection-hero {
+  background:
+    linear-gradient(rgba(20, 40, 28, 0.58), rgba(20, 40, 28, 0.7)),
+    var(--hero, none) center / cover no-repeat,
+    var(--green-dark);
+  color: #fff;
+  text-align: center;
+  padding: 5rem 1.25rem;
+}
+
+.collection-count {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 0.25rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .hero-buttons { display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap; }
@@ -332,4 +352,133 @@ body.searching .show-more { display: none; }
   text-align: center;
   padding: 2rem 1.25rem;
   margin-top: 2rem;
+}
+
+/* ---------- Nav dropdowns ---------- */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: var(--green-dark);
+  line-height: 1;
+}
+
+.dropdown { position: relative; }
+
+.dropbtn {
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  padding: 0.25rem 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.dropdown:hover .dropbtn,
+.dropdown:focus-within .dropbtn { color: var(--green); border-color: var(--green); }
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 180px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow-hover);
+  padding: 0.5rem;
+  display: none;
+  flex-direction: column;
+  z-index: 60;
+}
+
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu { display: flex; }
+
+.dropdown-menu a {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border-bottom: none !important;
+  font-size: 0.95rem;
+}
+
+.dropdown-menu a:hover { background: var(--green-light); color: var(--green-dark); }
+
+/* ---------- Browse chips ---------- */
+.browse { background: var(--cream); padding: 3rem 1.25rem 1rem; }
+
+.browse-inner { max-width: 1100px; margin: 0 auto; }
+
+.browse-inner h2 {
+  font-size: 1.2rem;
+  color: var(--green-dark);
+  margin: 1.25rem 0 0.6rem;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+.chip {
+  display: inline-block;
+  background: #fff;
+  border: 1px solid #e0dccf;
+  color: var(--green-dark);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s, background 0.2s, color 0.2s;
+}
+
+.chip:hover { transform: translateY(-2px); background: var(--green); color: #fff; }
+
+/* ---------- Diet disclaimer + empty state ---------- */
+.diet-note {
+  max-width: 800px;
+  margin: 0 auto 1.5rem;
+  padding: 0.85rem 1.1rem;
+  background: var(--green-light);
+  border-left: 4px solid var(--green);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.empty-msg {
+  text-align: center;
+  color: var(--muted);
+  padding: 3rem 1rem;
+  font-size: 1.05rem;
+}
+
+/* ---------- Mobile nav ---------- */
+@media (max-width: 760px) {
+  .nav-toggle { display: block; }
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 1.25rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .nav-links.open { display: flex; }
+  .nav { position: relative; flex-wrap: wrap; }
+  .dropdown-menu {
+    position: static;
+    box-shadow: none;
+    padding: 0 0 0 1rem;
+  }
+  .dropdown:hover .dropdown-menu,
+  .dropdown:focus-within .dropdown-menu { display: flex; }
 }
