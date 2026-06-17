@@ -170,7 +170,7 @@ function homePage() {
     `  <section class="hero" id="top">\n` +
     `    <div class="hero-content">\n` +
     `      <h1>100% Plant-Based.<br>100% Delicious.</h1>\n` +
-    `      <p>Over 160 easy vegan recipes — quick weeknight dinners, slow-cooker comfort food, desserts, smoothies, and more.</p>\n` +
+    `      <p>Over 200 easy vegan recipes — quick weeknight dinners, slow-cooker comfort food, desserts, smoothies, and more.</p>\n` +
     `      <div class="hero-buttons">\n` +
     `        <a class="btn btn-primary" href="#thirty-minute">⏱️ 30-Minute Meals</a>\n` +
     `        <a class="btn btn-secondary" href="#crock-pot">🍲 Crock Pot Meals</a>\n` +

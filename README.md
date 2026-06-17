@@ -1,7 +1,7 @@
 # 🌿 The Green Table — Vegan Recipe Website
 
 A fast, plant-based recipe website built with plain HTML, CSS, and JavaScript.
-**170 recipes** across a homepage plus 16 browsable category / ingredient / diet pages.
+**210 recipes** across a homepage plus 16 browsable category / ingredient / diet pages.
 
 ## Pages
 
@@ -58,7 +58,7 @@ node build-pages.js
 | `recipes-quick.js` | 50 thirty-minute meals (`RECIPES_QUICK`) |
 | `recipes-crockpot.js` | 50 crock pot meals (`RECIPES_CROCKPOT`) |
 | `recipes-favorites.js` | 50 favorites & desserts (`RECIPES_FAVORITES`) |
-| `recipes-smoothies.js` | Smoothies (`RECIPES_SMOOTHIES`) |
+| `recipes-smoothies.js` | 50 smoothies (`RECIPES_SMOOTHIES`) |
 | `recipes-lowcarb.js` | Curated low-carb dishes (`RECIPES_LOWCARB`) |
 | `ads.txt` | Google AdSense authorization |
 
