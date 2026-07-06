@@ -61,6 +61,16 @@ node build-pages.js
 | `recipes-smoothies.js` | 50 smoothies (`RECIPES_SMOOTHIES`) |
 | `recipes-lowcarb.js` | Curated low-carb dishes (`RECIPES_LOWCARB`) |
 | `ads.txt` | Google AdSense authorization |
+| `robots.txt` | Generated — allows crawling, points to the sitemap |
+| `sitemap.xml` | Generated — lists all 17 pages for search engines |
+
+## SEO / search indexing
+
+`build-pages.js` sets `SITE_URL` (the live domain) and stamps every page with a
+canonical tag, `robots` meta, and Open Graph tags, and writes `robots.txt` +
+`sitemap.xml`. If the domain changes, update `SITE_URL` and re-run
+`node build-pages.js`. After deploying, submit `https://<domain>/sitemap.xml` in
+Google Search Console and use URL Inspection → Request Indexing on key pages.
 
 ## Adding a recipe
 

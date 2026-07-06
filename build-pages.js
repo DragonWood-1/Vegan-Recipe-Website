@@ -13,6 +13,11 @@ const ADSENSE =
   '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8788099801042098"\n' +
   '     crossorigin="anonymous"></script>';
 
+// Live domain (no trailing slash). Drives the canonical tags, sitemap.xml, and
+// robots.txt that Google needs to index the site. Re-run `node build-pages.js`
+// after changing it.
+const SITE_URL = "https://vegankitchenguide.com";
+
 // Nav menus (label -> filename). Used to build the shared header on every page.
 const CATEGORIES = [
   ["Breakfast", "breakfast.html"], ["Lunch", "lunch.html"], ["Dinner", "dinner.html"],
@@ -82,13 +87,24 @@ const FOOTER =
   `    <p>🌿 The Green Table — plant-based recipes made simple.</p>\n` +
   `  </footer>`;
 
-function head(title, desc) {
+function head(title, desc, canonPath, ogImage) {
+  // canonPath: "" for the homepage, or a filename like "breakfast.html".
+  const canon = SITE_URL + "/" + (canonPath || "");
+  const img = ogImage || "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=70";
   return (
     `<!DOCTYPE html>\n<html lang="en">\n<head>\n` +
     `  <meta charset="UTF-8">\n` +
     `  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n` +
     `  <meta name="description" content="${desc}">\n` +
+    `  <meta name="robots" content="index, follow">\n` +
+    `  <link rel="canonical" href="${canon}">\n` +
     `  <title>${title}</title>\n` +
+    `  <meta property="og:type" content="website">\n` +
+    `  <meta property="og:title" content="${title}">\n` +
+    `  <meta property="og:description" content="${desc}">\n` +
+    `  <meta property="og:url" content="${canon}">\n` +
+    `  <meta property="og:image" content="${img}">\n` +
+    `  <meta name="twitter:card" content="summary_large_image">\n` +
     `  ${ADSENSE}\n` +
     `  <link rel="preconnect" href="https://fonts.googleapis.com">\n` +
     `  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n` +
@@ -127,7 +143,7 @@ function collectionPage(kind, value, file, h1, emoji, subtitle, heroImg) {
     ? `      <p class="diet-note">Recipes here are auto-sorted from our library by their ingredients — always double-check the ingredient list against your own dietary needs.</p>\n`
     : "";
   return (
-    head("" + h1 + " — The Green Table", subtitle) + "\n" +
+    head("" + h1 + " — The Green Table", subtitle, file, heroImg) + "\n" +
     `<body>\n\n` +
     NAV + "\n\n" +
     `  <section class="collection-hero" style="--hero: url('${heroImg}')">\n` +
@@ -164,7 +180,7 @@ function chipRow(items) {
 
 function homePage() {
   return (
-    head("The Green Table — Vegan Recipes", "Delicious plant-based recipes — quick 30-minute meals, easy crock pot dinners, desserts, and more.") + "\n" +
+    head("The Green Table — Vegan Recipes", "Delicious plant-based recipes — quick 30-minute meals, easy crock pot dinners, desserts, and more.", "", "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=70") + "\n" +
     `<body>\n\n` +
     NAV + "\n\n" +
     `  <section class="hero" id="top">\n` +
@@ -209,6 +225,27 @@ function homePage() {
   );
 }
 
+/* ---------------- Sitemap + robots.txt ---------------- */
+function writeSitemap() {
+  const pages = [""].concat(COLLECTIONS.map((c) => c[2])); // "" = homepage
+  const urls = pages
+    .map((p) => `  <url>\n    <loc>${SITE_URL}/${p}</loc>\n    <changefreq>weekly</changefreq>\n  </url>`)
+    .join("\n");
+  const xml =
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    urls + "\n</urlset>\n";
+  fs.writeFileSync(path.join(ROOT, "sitemap.xml"), xml);
+}
+
+function writeRobots() {
+  const txt =
+    `User-agent: *\n` +
+    `Allow: /\n\n` +
+    `Sitemap: ${SITE_URL}/sitemap.xml\n`;
+  fs.writeFileSync(path.join(ROOT, "robots.txt"), txt);
+}
+
 /* ---------------- Write everything ---------------- */
 let written = 0;
 fs.writeFileSync(path.join(ROOT, "index.html"), homePage());
@@ -217,4 +254,6 @@ COLLECTIONS.forEach((c) => {
   fs.writeFileSync(path.join(ROOT, c[2]), collectionPage(...c));
   written++;
 });
-console.log("Generated " + written + " pages.");
+writeSitemap();
+writeRobots();
+console.log("Generated " + written + " pages, plus sitemap.xml and robots.txt.");
