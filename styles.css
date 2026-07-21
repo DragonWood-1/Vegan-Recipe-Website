@@ -353,6 +353,44 @@ body.searching .show-more { display: none; }
   padding: 2rem 1.25rem;
   margin-top: 2rem;
 }
+.footer-links {
+  margin-top: 0.85rem;
+  display: flex;
+  gap: 1.25rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.footer-links a { color: #d6e6dc; text-decoration: none; font-size: 0.9rem; }
+.footer-links a:hover { color: #fff; text-decoration: underline; }
+
+/* ---------- Static content pages + collection intro ---------- */
+.content-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 1rem;
+}
+.content-page h1 {
+  font-family: "Fraunces", Georgia, serif;
+  color: var(--green-dark);
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+.content-page h2 {
+  color: var(--green-dark);
+  font-size: 1.25rem;
+  margin: 1.75rem 0 0.6rem;
+}
+.content-page p, .content-page li { line-height: 1.7; margin-bottom: 0.85rem; }
+.content-page ul { padding-left: 1.25rem; margin-bottom: 0.85rem; }
+.content-page a { color: var(--green); }
+.content-page .muted { color: var(--muted); font-size: 0.9rem; margin-top: -0.5rem; }
+.collection-intro {
+  max-width: 800px;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+  color: var(--muted);
+  line-height: 1.65;
+}
 
 /* ---------- Nav dropdowns ---------- */
 .nav-toggle {

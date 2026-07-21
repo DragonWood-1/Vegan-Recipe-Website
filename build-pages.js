@@ -85,7 +85,95 @@ const DATA_SCRIPTS =
 const FOOTER =
   `  <footer class="site-footer">\n` +
   `    <p>🌿 The Green Table — plant-based recipes made simple.</p>\n` +
+  `    <nav class="footer-links">\n` +
+  `      <a href="about.html">About</a>\n` +
+  `      <a href="contact.html">Contact</a>\n` +
+  `      <a href="privacy.html">Privacy Policy</a>\n` +
+  `    </nav>\n` +
   `  </footer>`;
+
+/* ---------------- Recipe data (loaded at build time) ----------------
+ * Load the same recipe arrays and tag logic the browser uses, so we can
+ * pre-render real recipe content into the HTML instead of leaving pages
+ * as empty JS shells. */
+const vm = require("vm");
+const { deriveTags } = require("./tags.js");
+const RECIPE_FILES = [
+  "recipes-quick.js", "recipes-crockpot.js", "recipes-favorites.js",
+  "recipes-smoothies.js", "recipes-lowcarb.js", "recipes.js"
+];
+const RECIPES = (() => {
+  const src = RECIPE_FILES.map((f) => fs.readFileSync(path.join(ROOT, f), "utf8")).join("\n");
+  const sandbox = { OUT: {} };
+  vm.createContext(sandbox);
+  vm.runInContext(src + "\nOUT.value = RECIPES;", sandbox);
+  return sandbox.OUT.value;
+})();
+RECIPES.forEach((r) => { r.tags = deriveTags(r); });
+
+const PREVIEW_COUNT = 12; // keep in sync with app.js
+
+function esc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function escAttr(s) {
+  return esc(s).replace(/"/g, "&quot;");
+}
+
+// One recipe card, matching the markup app.js produces so existing CSS applies.
+// app.js enhances these server-rendered cards (wires the modal + "show all").
+function recipeCardHTML(r, i) {
+  const search = escAttr((r.title + " " + r.desc + " " + r.ingredients.join(" ")).toLowerCase());
+  const cls = "recipe-card" + (i >= PREVIEW_COUNT ? " extra collapsed" : "");
+  return (
+    `      <button class="${cls}" type="button" data-id="${escAttr(r.id)}" ` +
+    `aria-label="View recipe: ${escAttr(r.title)}" data-search="${search}">\n` +
+    `        <div class="card-img-wrap">\n` +
+    `          <img src="${escAttr(r.img)}" alt="${escAttr(r.title)}" loading="lazy">\n` +
+    `          <span class="time-badge">⏱ ${esc(r.time)}</span>\n` +
+    `        </div>\n` +
+    `        <div class="card-body">\n` +
+    `          <h3>${esc(r.title)}</h3>\n` +
+    `          <p>${esc(r.desc)}</p>\n` +
+    `          <span class="card-meta">${esc(r.servings)}</span>\n` +
+    `        </div>\n` +
+    `      </button>`
+  );
+}
+
+// A full grid of cards plus the "Show all N recipes" button, pre-rendered.
+function gridHTML(recipes, attrs) {
+  if (!recipes.length) {
+    return `      <p class="empty-msg">No recipes here yet — check back soon!</p>`;
+  }
+  const cards = recipes.map((r, i) => recipeCardHTML(r, i)).join("\n");
+  const more = recipes.length > PREVIEW_COUNT
+    ? `\n      <button class="btn btn-secondary show-more" type="button">Show all ${recipes.length} recipes ↓</button>`
+    : "";
+  return `      <div class="recipe-grid"${attrs || ""}>\n${cards}\n      </div>${more}`;
+}
+
+// JSON-LD so search engines read the full ingredients + steps as structured
+// Recipe data (crawlable content Google explicitly supports).
+function recipeJsonLd(recipes) {
+  const items = recipes.map((r, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    item: {
+      "@type": "Recipe",
+      name: r.title,
+      image: r.img,
+      description: r.desc,
+      recipeYield: r.servings,
+      totalTime: r.time,
+      recipeIngredient: r.ingredients,
+      recipeInstructions: r.steps.map((s) => ({ "@type": "HowToStep", text: s })),
+      suitableForDiet: "https://schema.org/VeganDiet"
+    }
+  }));
+  const doc = { "@context": "https://schema.org", "@type": "ItemList", itemListElement: items };
+  return `  <script type="application/ld+json">\n${JSON.stringify(doc)}\n  </script>`;
+}
 
 function head(title, desc, canonPath, ogImage) {
   // canonPath: "" for the homepage, or a filename like "breakfast.html".
@@ -142,6 +230,11 @@ function collectionPage(kind, value, file, h1, emoji, subtitle, heroImg) {
   const disclaimer = isDiet
     ? `      <p class="diet-note">Recipes here are auto-sorted from our library by their ingredients — always double-check the ingredient list against your own dietary needs.</p>\n`
     : "";
+  const matches = RECIPES.filter((r) => r.tags[kind].includes(value));
+  const intro =
+    `      <p class="collection-intro">${esc(h1)} — ${esc(subtitle)} ` +
+    `Every recipe below is 100% plant-based, with the full ingredient list and step-by-step directions. ` +
+    `Browse all ${matches.length} recipes, search by keyword, or tap any card for the complete recipe.</p>\n`;
   return (
     head("" + h1 + " — The Green Table", subtitle, file, heroImg) + "\n" +
     `<body>\n\n` +
@@ -150,7 +243,7 @@ function collectionPage(kind, value, file, h1, emoji, subtitle, heroImg) {
     `    <div class="hero-content">\n` +
     `      <h1>${emoji} ${h1}</h1>\n` +
     `      <p>${subtitle}</p>\n` +
-    `      <span class="collection-count" id="collection-count"></span>\n` +
+    `      <span class="collection-count" id="collection-count">${matches.length} recipes</span>\n` +
     `      <div class="search-wrap">\n` +
     `        <input type="search" id="recipe-search" placeholder="Search these recipes…" aria-label="Search recipes">\n` +
     `        <span id="search-count" aria-live="polite"></span>\n` +
@@ -159,12 +252,14 @@ function collectionPage(kind, value, file, h1, emoji, subtitle, heroImg) {
     `  </section>\n\n` +
     `  <main>\n` +
     `    <section class="recipe-section">\n` +
+    intro +
     disclaimer +
-    `      <div class="recipe-grid"></div>\n` +
+    gridHTML(matches) + "\n" +
     `    </section>\n` +
     `  </main>\n\n` +
     MODAL + "\n\n" +
     FOOTER + "\n\n" +
+    recipeJsonLd(matches) + "\n" +
     DATA_SCRIPTS + "\n" +
     `  <script>window.COLLECTION = { kind: "${kind}", value: "${value}" };</script>\n` +
     `  <script src="tags.js"></script>\n` +
@@ -208,13 +303,13 @@ function homePage() {
     `  <main>\n` +
     `    <section class="recipe-section" id="thirty-minute">\n` +
     `      <div class="section-head">\n        <h2>⏱️ 30-Minute Meals</h2>\n        <p>Weeknight winners — on the table fast, no shortcuts on flavor.</p>\n      </div>\n` +
-    `      <div class="recipe-grid" data-category="quick"></div>\n    </section>\n\n` +
+    gridHTML(RECIPES.filter((r) => r.category === "quick"), ` data-category="quick"`) + "\n    </section>\n\n" +
     `    <section class="recipe-section alt" id="crock-pot">\n` +
     `      <div class="section-head">\n        <h2>🍲 Crock Pot Vegan Meals</h2>\n        <p>Set it, forget it, and come home to dinner. Slow cooker comfort food, all plants.</p>\n      </div>\n` +
-    `      <div class="recipe-grid" data-category="crockpot"></div>\n    </section>\n\n` +
+    gridHTML(RECIPES.filter((r) => r.category === "crockpot"), ` data-category="crockpot"`) + "\n    </section>\n\n" +
     `    <section class="recipe-section" id="all-recipes">\n` +
     `      <div class="section-head">\n        <h2>🥗 Favorites &amp; Vegan Desserts</h2>\n        <p>Reader favorites from breakfast to dessert — including 100% plant-based sweets.</p>\n      </div>\n` +
-    `      <div class="recipe-grid" data-category="favorites"></div>\n    </section>\n` +
+    gridHTML(RECIPES.filter((r) => r.category === "favorites"), ` data-category="favorites"`) + "\n    </section>\n" +
     `  </main>\n\n` +
     MODAL + "\n\n" +
     FOOTER + "\n\n" +
@@ -225,9 +320,75 @@ function homePage() {
   );
 }
 
+/* ---------------- Static content pages (About / Contact / Privacy) ---------------- */
+const CONTACT_EMAIL = "hello@vegankitchenguide.com";
+const LAST_UPDATED = "July 21, 2026";
+
+function contentPage(file, title, desc, innerHTML) {
+  return (
+    head(title + " — The Green Table", desc, file) + "\n" +
+    `<body>\n\n` +
+    NAV + "\n\n" +
+    `  <main class="content-page">\n` +
+    innerHTML + "\n" +
+    `  </main>\n\n` +
+    FOOTER + "\n\n" +
+    `  <script src="app.js"></script>\n` +
+    `</body>\n</html>\n`
+  );
+}
+
+const STATIC_PAGES = [
+  ["about.html", "About", "The story behind The Green Table and our vegan recipe library.",
+    `    <h1>About The Green Table</h1>\n` +
+    `    <p>The Green Table is a free vegan recipe library built for anyone who wants to eat more plants without giving up flavor. Whether you are fully plant-based, flexitarian, or just cooking one meatless dinner a week, our goal is to make vegan cooking approachable, affordable, and genuinely delicious.</p>\n` +
+    `    <h2>What you'll find here</h2>\n` +
+    `    <p>Every recipe on this site is 100% plant-based — no meat, dairy, or eggs. Our collection spans quick 30-minute weeknight meals, hands-off crock pot dinners, breakfasts, soups, snacks, smoothies, and desserts. Each recipe includes a full ingredient list and clear, step-by-step directions so you can cook it with confidence.</p>\n` +
+    `    <h2>How our recipes are organized</h2>\n` +
+    `    <p>We tag every recipe by meal type, key ingredient (tofu, chickpeas, lentils, mushrooms, avocado), and dietary style (high-protein, gluten-free, low-carb, oil-free), so you can quickly find something that fits what you have on hand and how you like to eat. The diet pages are auto-sorted from the ingredient lists — always double-check against your own dietary needs.</p>\n` +
+    `    <h2>Our promise</h2>\n` +
+    `    <p>We test our recipes to make sure they actually work in a home kitchen, and we write them in plain language without the endless backstory. Have a suggestion or a recipe you'd love to see? <a href="contact.html">Get in touch</a> — we read every message.</p>`],
+
+  ["contact.html", "Contact", "Get in touch with The Green Table.",
+    `    <h1>Contact Us</h1>\n` +
+    `    <p>We'd love to hear from you. Questions about a recipe, a substitution suggestion, a broken link, or just want to say hello? Reach out any time.</p>\n` +
+    `    <h2>Email</h2>\n` +
+    `    <p>The best way to reach us is by email at <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>. We do our best to reply within a few business days.</p>\n` +
+    `    <h2>Recipe requests &amp; feedback</h2>\n` +
+    `    <p>Tried one of our recipes? Let us know how it turned out — your feedback helps us improve. If there's a vegan dish you'd like us to develop, send it over and it may end up in our library.</p>\n` +
+    `    <h2>A note on advice</h2>\n` +
+    `    <p>Our recipes and articles are for general informational purposes and are not a substitute for professional dietary or medical advice. Please consult a qualified professional about your individual nutritional needs.</p>`],
+
+  ["privacy.html", "Privacy Policy", "How The Green Table handles data, cookies, and advertising.",
+    `    <h1>Privacy Policy</h1>\n` +
+    `    <p class="muted">Last updated: ${LAST_UPDATED}</p>\n` +
+    `    <p>This Privacy Policy explains how The Green Table ("we", "us", or "our") collects, uses, and protects information when you visit this website. By using the site, you agree to the practices described below.</p>\n` +
+    `    <h2>Information we collect</h2>\n` +
+    `    <p>We do not require you to create an account or submit personal information to browse recipes. If you contact us by email, we receive the information you choose to share (such as your name and email address) solely to respond to you. Like most websites, our servers and third-party providers may automatically log standard technical data such as your browser type, device, and IP address.</p>\n` +
+    `    <h2>Cookies</h2>\n` +
+    `    <p>Cookies are small text files stored on your device. We and our partners use cookies to understand how visitors use the site and to serve relevant advertising. You can disable cookies in your browser settings, though some features may not work as intended.</p>\n` +
+    `    <h2>Advertising &amp; Google AdSense</h2>\n` +
+    `    <p>This site displays ads served by Google, including through Google AdSense. Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this and other websites.</p>\n` +
+    `    <ul>\n` +
+    `      <li>Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to this site and/or other sites on the Internet.</li>\n` +
+    `      <li>Google uses the DoubleClick cookie to serve ads based on your interests. You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" rel="nofollow noopener" target="_blank">Google Ads Settings</a>.</li>\n` +
+    `      <li>You can also opt out of a third-party vendor's use of cookies for personalized advertising at <a href="https://www.aboutads.info/choices/" rel="nofollow noopener" target="_blank">aboutads.info/choices</a>.</li>\n` +
+    `    </ul>\n` +
+    `    <h2>Third-party links</h2>\n` +
+    `    <p>Our site may link to external websites. We are not responsible for the privacy practices or content of those sites; we encourage you to review their policies.</p>\n` +
+    `    <h2>Children's privacy</h2>\n` +
+    `    <p>This site is intended for a general audience and is not directed at children under 13. We do not knowingly collect personal information from children.</p>\n` +
+    `    <h2>Changes to this policy</h2>\n` +
+    `    <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with a revised "last updated" date.</p>\n` +
+    `    <h2>Contact</h2>\n` +
+    `    <p>Questions about this policy? Email us at <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.</p>`]
+];
+
 /* ---------------- Sitemap + robots.txt ---------------- */
 function writeSitemap() {
-  const pages = [""].concat(COLLECTIONS.map((c) => c[2])); // "" = homepage
+  const pages = [""]
+    .concat(COLLECTIONS.map((c) => c[2]))
+    .concat(STATIC_PAGES.map((p) => p[0])); // "" = homepage
   const urls = pages
     .map((p) => `  <url>\n    <loc>${SITE_URL}/${p}</loc>\n    <changefreq>weekly</changefreq>\n  </url>`)
     .join("\n");
@@ -252,6 +413,10 @@ fs.writeFileSync(path.join(ROOT, "index.html"), homePage());
 written++;
 COLLECTIONS.forEach((c) => {
   fs.writeFileSync(path.join(ROOT, c[2]), collectionPage(...c));
+  written++;
+});
+STATIC_PAGES.forEach(([file, title, desc, inner]) => {
+  fs.writeFileSync(path.join(ROOT, file), contentPage(file, title, desc, inner));
   written++;
 });
 writeSitemap();

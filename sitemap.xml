@@ -68,4 +68,16 @@
     <loc>https://vegankitchenguide.com/oil-free.html</loc>
     <changefreq>weekly</changefreq>
   </url>
+  <url>
+    <loc>https://vegankitchenguide.com/about.html</loc>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://vegankitchenguide.com/contact.html</loc>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://vegankitchenguide.com/privacy.html</loc>
+    <changefreq>weekly</changefreq>
+  </url>
 </urlset>

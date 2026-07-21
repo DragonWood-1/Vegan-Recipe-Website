@@ -4,8 +4,15 @@
 (function () {
   "use strict";
 
+  // Content pages (About/Contact/Privacy) don't load the recipe data — only the
+  // shared nav needs wiring there. Bail out of all recipe logic if it's absent.
+  var HAS_RECIPES = typeof RECIPES !== "undefined" && typeof deriveTags === "function";
+
   // Attach meal/ingredient/diet tags (from tags.js) to every recipe once.
-  RECIPES.forEach((r) => { r.tags = deriveTags(r); });
+  var byId = {};
+  if (HAS_RECIPES) {
+    RECIPES.forEach((r) => { r.tags = deriveTags(r); byId[r.id] = r; });
+  }
 
   /* ---------------------------------------------------------------
    * 2. Card + grid rendering
@@ -89,17 +96,39 @@
     }
   }
 
-  // Homepage mode: one grid per category. Collection mode: a single filtered grid.
-  if (window.COLLECTION) {
+  // Wire a server-rendered grid: attach the modal to each card and hook up the
+  // "Show all" button (rendered right after the grid by build-pages.js).
+  function enhanceGrid(grid) {
+    grid.querySelectorAll(".recipe-card").forEach((card) => {
+      const r = byId[card.dataset.id];
+      if (r) card.addEventListener("click", () => openModal(r));
+    });
+    const moreBtn = grid.nextElementSibling;
+    if (moreBtn && moreBtn.classList.contains("show-more")) {
+      moreBtn.addEventListener("click", () => {
+        grid.querySelectorAll(".extra").forEach((c) => c.classList.remove("collapsed"));
+        moreBtn.remove();
+      });
+    }
+  }
+
+  // Prefer the pre-rendered HTML (good for SEO); fall back to building cards in
+  // JS if a grid was left empty. Homepage: one grid per category. Collection
+  // pages: a single filtered grid.
+  if (HAS_RECIPES && window.COLLECTION) {
     const grid = document.querySelector(".recipe-grid");
     const { kind, value } = window.COLLECTION; // kind: meals|ingredients|diets
     const matches = RECIPES.filter((r) => r.tags[kind].includes(value));
-    if (grid) renderGrid(grid, matches);
+    if (grid) {
+      if (grid.querySelector(".recipe-card")) enhanceGrid(grid);
+      else renderGrid(grid, matches);
+    }
     const countEl = document.getElementById("collection-count");
     if (countEl) countEl.textContent = matches.length + " recipes";
-  } else {
+  } else if (HAS_RECIPES) {
     document.querySelectorAll(".recipe-grid[data-category]").forEach((grid) => {
-      renderGrid(grid, RECIPES.filter((r) => r.category === grid.dataset.category));
+      if (grid.querySelector(".recipe-card")) enhanceGrid(grid);
+      else renderGrid(grid, RECIPES.filter((r) => r.category === grid.dataset.category));
     });
   }
 
